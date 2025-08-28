@@ -11,3 +11,9 @@ namespace ScreenSound.Shared.Dados.Modelos
     {
     }
 }
+
+/*
+ OBSERVAÇÕES
+: IdentityUser<int> - O int INDICA QUE A CHAVE PRIMÁRIA DA TABELA QUE VAI REPRESENTAR
+ESSA CLASSE NO BD, VAI SER UM INTEIRO
+ */

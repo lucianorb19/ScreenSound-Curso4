@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using ScreenSound.API.Endpoints;
 using ScreenSound.Banco;
 using ScreenSound.Modelos;
+using ScreenSound.Shared.Dados.Modelos;
 using ScreenSound.Shared.Modelos.Modelos;
 using System.Data.SqlTypes;
 using System.Text.Json.Serialization;
@@ -15,6 +16,15 @@ builder.Services.AddDbContext<ScreenSoundContext>((options) => {
             .UseSqlServer(builder.Configuration["ConnectionStrings:ScreenSoundDB"])
             .UseLazyLoadingProxies();
 });
+
+//INJEÇÃO SERVIÇO IDENTITY PARA GESTÃO DE ENDPOINTS DE ACESSO
+builder.Services
+    .AddIdentityApiEndpoints<PessoaComAcesso>()
+    .AddEntityFrameworkStores<ScreenSoundContext>();
+
+//INJEÇÃO SERVIÇO DE AUTORIZAÇÃO
+builder.Services.AddAuthorization();
+
 builder.Services.AddTransient<DAL<Artista>>();
 builder.Services.AddTransient<DAL<Musica>>();
 builder.Services.AddTransient<DAL<Genero>>();
@@ -41,9 +51,18 @@ app.UseCors("wasm");
 
 app.UseStaticFiles();
 
+//VERIFICAR REQUISIÇÕES HTTPS ANTES DE USAR ENDPOINTS
+app.UseAuthorization();
+//USO DE ENDPOINTS
 app.AddEndPointsArtistas();
 app.AddEndPointsMusicas();
 app.AddEndPointGeneros();
+
+//MAPEAMENTO DOS ENDPOINST DO IDENTITY - GESTÃO DE ACESSO
+app.MapGroup("auth").MapIdentityApi<PessoaComAcesso>().WithTags("Autorização");
+//MapGroup("auth") - TODAS ROTAS MAPEADAS COMEÇARÃO COM ESSE CAMINHO
+//.WithTags("Autorização"); - ORGANIZAÇÃO. NO SWAGGER, APARECERÃO JUNTAS NESSA TAG
+
 
 app.UseSwagger();
 app.UseSwaggerUI();
