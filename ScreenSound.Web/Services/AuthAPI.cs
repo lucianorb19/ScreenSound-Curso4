@@ -11,7 +11,7 @@ public class AuthAPI(IHttpClientFactory factory)
     
     public async Task<AuthResponse> LoginAsync(string email, string senha)
     {
-        var response = await _httpClient.PostAsJsonAsync("auth/login", new
+        var response = await _httpClient.PostAsJsonAsync("auth/login?useCookies=true", new
         {
             email,
             password = senha
@@ -24,7 +24,7 @@ public class AuthAPI(IHttpClientFactory factory)
         }
 
         //SE NÃO
-        return new AuthResponse{Sucesso = false, Erro="Erro no login" };
+        return new AuthResponse{Sucesso = false, Erro="[Login/Senha inválido]" };
     }
 
    
