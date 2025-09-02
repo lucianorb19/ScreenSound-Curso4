@@ -1,0 +1,21 @@
+﻿@page "/logout"
+@inject AuthAPI authAPI
+
+
+
+@code {
+
+    //SEMPRE QUE A PÁGINA FOR CARREGADA
+    protected override async Task OnInitializedAsync()
+    {
+        //SE HOUVER USUÁRIO AUTENTICADO
+        if(await authAPI.VerificaAutenticado())
+        {   
+            //LOGOUT É FEITO
+            await authAPI.LogoutAsync();
+        }
+
+        //SE NÃO, FAÇO SÓ OQUE É DEFINIDO PELA CLASSE BASE
+        await base.OnInitializedAsync();
+    }
+}

@@ -10,12 +10,15 @@ public class AuthAPI(IHttpClientFactory factory) : AuthenticationStateProvider
 {
     //PROPRIEDADES - CAMPOS
     private readonly HttpClient _httpClient = factory.CreateClient("API");
+    private bool autenticado = false;
 
     //DEMAIS MÉTODOS
 
     //CONFIGURAÇÃO ESTADO DE AUTENTICAÇÃO
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        autenticado = false;
+        
         //ClaimsPrincipal VAZIO - PESSOA SEM AUTENTICAÇÃO / SEM ESTADO DE AUTENTICAÇÃO
         var pessoa = new ClaimsPrincipal();
 
@@ -41,10 +44,11 @@ public class AuthAPI(IHttpClientFactory factory) : AuthenticationStateProvider
             //E INDICA TAMBÉM NUMA STRING QUAL TIPO DE AUTENTICAÇÃO ESTÁ SENDO USADA
             var identity = new ClaimsIdentity(dados, "Cookies");
 
-            //COM TUDAS AS INFORMAÇÕES PREENCHIDAS
+            //COM TODAS AS INFORMAÇÕES PREENCHIDAS
             //PREENCHO O OBJETO ClaimsPrincipal
             //ClaimsPrincipal PREENCHIDO - PESSOA AUTENTICADA / ESTADO DE AUTENTICAÇÃO OK
             pessoa = new ClaimsPrincipal(identity);
+            autenticado = true;
         }
 
         //RETORNO ESTADO DE AUTENTICAÇÃO 
@@ -75,5 +79,19 @@ public class AuthAPI(IHttpClientFactory factory) : AuthenticationStateProvider
         return new AuthResponse{Sucesso = false, Erro="[Login/Senha inválido]" };
     }
 
-   
+    //MÉTODO DE LOGOUT
+    public async Task LogoutAsync()
+    {
+        await _httpClient.PostAsync("auth/logout", null);
+        //MUDANDA ESTADO DE AUTENTICAÇÃO
+        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+    }
+
+    //MÉTODO QUE VERIFICA SE USUÁRIO ESTÁ AUTENTICADO OU NÃO E RETORNA UM bool
+    public async Task<bool> VerificaAutenticado()
+    {
+        await GetAuthenticationStateAsync();
+        return autenticado;
+    }
+
 }
