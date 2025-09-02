@@ -1,0 +1,11 @@
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject NavigationManager navigation
+
+@code {
+    protected override void OnInitialized()
+    {
+        string rotaParaRetornarAposLogin = Uri.EscapeDataString(navigation.Uri);
+        navigation.NavigateToLogin($"/login?ReturnUrl={rotaParaRetornarAposLogin}");
+    }
+
+}

@@ -1,6 +1,9 @@
 ﻿@page "/login"
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AuthAPI authAPI
+@inject NavigationManager navigation
+@attribute [AllowAnonymous]
+
 
 <MudPaper Class="px-8 pt-2 pb-4 mx-16 my-8" Justify="Justify.Center">
 
@@ -40,9 +43,23 @@
     private string? email;
     private string? senha;
 
+    //PROPRIEDADE RECEBE VALOR QUE VEM NO PARÂMETRO ReturnUrl DA URL
+    //CRIADA NO COMPONENTE RedirectToLogin
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
     private async Task FazerLogin()
     {
-        await authAPI.LoginAsync(email, senha);
+        var resposta = await authAPI.LoginAsync(email, senha);
+        if (resposta.Sucesso)
+        {
+            if(ReturnUrl is not null)
+            {
+                //APLICAÇÃO É REDIRECIONADA PARA A PÁGINA QUE ESTAVA SENDO ACESSADA
+                //ANTES DO LOGIN
+                navigation.NavigateTo(ReturnUrl);
+            }
+        }
     }
 
 }
