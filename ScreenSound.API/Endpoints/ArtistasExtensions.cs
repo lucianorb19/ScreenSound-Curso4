@@ -3,6 +3,8 @@ using ScreenSound.API.Requests;
 using ScreenSound.API.Response;
 using ScreenSound.Banco;
 using ScreenSound.Modelos;
+using ScreenSound.Shared.Dados.Modelos;
+using System.Security.Claims;
 
 namespace ScreenSound.API.Endpoints;
 
@@ -81,6 +83,50 @@ public static class ArtistasExtensions
             dal.Atualizar(artistaAAtualizar);
             return Results.Ok();
         });
+
+        //ENDPOINT PARA INSERÇÃO/ATUALIZAÇÃO DE UMA AVALIAÇÃO
+        groupBuilder.MapPost("avaliacao", (
+            HttpContext context,
+            [FromBody] AvaliacaoArtistaRequest request,
+            [FromServices] DAL<Artista> dalArtista,
+            [FromServices] DAL<PessoaComAcesso> dalPessoa) =>
+        {
+            //IDENTIFICAÇÃO DO ARTISTA A AVALIAR
+            var artista = dalArtista.RecuperarPor(a => a.Id == request.artistaId);
+            if (artista is null) return Results.NotFound();
+
+            //IDENTIFICAÇÃO DO USUÁRIO QUE ESTÁ AVALIANDO
+            var email = context.User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value
+                ?? throw new InvalidOperationException("Usuário não conectado!");
+            //context.User.Claims - USA INFORMAÇÕES DO COOKIE DE AUTENTICAÇÃO
+
+            var pessoa = dalPessoa
+                .RecuperarPor(p => p.Email.Equals(email))
+                ?? throw new InvalidOperationException("Usuário não conectado!");
+
+            //IDENTIFICAÇÃO DA AVALIAÇÃO (CASO EXISTA)
+            var avaliacao = artista.Avaliacoes
+                .FirstOrDefault(av => av.ArtistaId == artista.Id 
+                                    && av.PessoaId == pessoa.Id);
+
+            //SE ESSA AVALIAÇÃO AINDA NÃO EXISTIR, OU SEJA
+            //É A PRIMEIRA VEZ QUE ESSE USUÁRIO AVALIA ESSA BANDA/ARTISTA
+            if(avaliacao is null)
+            {
+                //ADICIONO A AVALIAÇÃO NA TABELA 
+                artista.AdicionarNota(pessoa.Id, request.nota);
+            }
+            else//CASO JÁ EXISTA ESSA AVALIAÇÃO
+            {
+                //ATUALIZO SUA INFORMAÇÃO DE NOTA COM A NOVA NOTA PASSADA
+                avaliacao.Nota = request.nota;
+            }
+
+            return Results.Created();
+        });
+
+
         #endregion
     }
 
