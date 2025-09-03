@@ -8,6 +8,7 @@ public class ArtistaAPI
 {
     private readonly HttpClient _httpClient;
 
+    //MÉTODOS PARA ARTISTA
     public ArtistaAPI(IHttpClientFactory factory)
     {
         _httpClient = factory.CreateClient("API");
@@ -33,7 +34,20 @@ public class ArtistaAPI
     }
 
     public async Task UpdateArtistaAsync(ArtistaRequestEdit artista)
-    {        
-       await _httpClient.PutAsJsonAsync($"artistas", artista);
+    {
+        await _httpClient.PutAsJsonAsync($"artistas", artista);
+    }
+
+    //MÉTODOS PARA AVALIAÇÃO
+    public async Task AvaliarArtistaAsync(int artistaId, double nota)
+    {
+        await _httpClient.PostAsJsonAsync("artistas/avaliacao", new { artistaId, nota });
+    }
+
+    public async Task<AvaliacaoDoArtistaResponse?> 
+            GetAvaliacaoDaPessoaLogadaAsync(int artistaId)
+    {
+        return await _httpClient.GetFromJsonAsync<AvaliacaoDoArtistaResponse>
+                ($"artistas/{artistaId}/avaliacao");
     }
 }

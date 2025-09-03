@@ -26,6 +26,13 @@
                           RequiredError="Campo obrigatório." />
 
             <div class="d-flex align-center justify-space-between mt-4">
+
+                <MudRating 
+                    @bind-SelectedValue="Classificacao"
+                    @onclick="AvaliarArtista"/>
+
+                <div>
+                
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            Disabled="@(!success)"
@@ -45,8 +52,9 @@
                            @onclick="VoltarParaListagem">
                     Voltar
                 </MudButton>
-            </div>
+                </div>
 
+            </div>
         </MudForm>
     </MudPaper>
 }
