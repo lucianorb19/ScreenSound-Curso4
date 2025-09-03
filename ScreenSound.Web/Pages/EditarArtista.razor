@@ -66,12 +66,15 @@ else
 
 
 @code {
+
     bool success;
     string[] errors = { };
     MudForm? form;
     public ArtistaResponse? Artista { get; set; }
     public string? Nome { get; set; } = string.Empty;
     public string? Bio { get; set; }=string.Empty;
+    public int Classificacao{ get; set; }
+
     [Parameter]
     public string? NomeArtista { get; set; }
 
@@ -125,5 +128,10 @@ else
             // Logger.LogInformation("Erro ao cadastrar artista!");
         }
 
+    }
+
+    private async Task AvaliarArtista()
+    {
+        await artistaAPI.AvaliarArtistaAsync(Artista!.Id, Classificacao);
     }
 }
