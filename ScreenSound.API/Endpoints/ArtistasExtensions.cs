@@ -173,6 +173,7 @@ public static class ArtistasExtensions
                 avaliacao.Nota = request.nota;
             }
 
+            dalArtista.Atualizar(artista);
             return Results.Created();
         });
 
@@ -187,7 +188,16 @@ public static class ArtistasExtensions
 
     private static ArtistaResponse EntityToResponse(Artista artista)
     {
-        return new ArtistaResponse(artista.Id, artista.Nome, artista.Bio, artista.FotoPerfil);
+        return new ArtistaResponse(artista.Id, artista.Nome, 
+                            artista.Bio, artista.FotoPerfil)
+        {
+            //MÉDIA DE NOTAS DESSE ARTISTA
+            Classificacao = artista
+                .Avaliacoes
+                .Select(a => a.Nota)//DA LISTA DE AvaliacaoArtista SELECIONO AS NOTAS
+                .DefaultIfEmpty(0) //SE FOR VAZIO, CONSIDERO TUDO ZERO
+                .Average() //E CALCULO A MÉDIA
+        };
     }
 
   
