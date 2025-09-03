@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Mvc;
 using ScreenSound.API.Requests;
 using ScreenSound.API.Response;
 using ScreenSound.Banco;
@@ -84,6 +85,55 @@ public static class ArtistasExtensions
             return Results.Ok();
         });
 
+
+        //ENDPOINTS AVALIAÇÃO
+        groupBuilder.MapGet("{id}/avaliacao",(
+            int id,
+            HttpContext context,
+            [FromServices] DAL<PessoaComAcesso> dalPessoa,
+            [FromServices] DAL<Artista> dalArtista
+            ) =>
+        {
+            //IDENTIFICAR O ARTISTA CONSULTADO
+            var artista = dalArtista.RecuperarPor(a => a.Id == id);
+            if(artista is null) return Results.NotFound($"Artisa de id {id} não encontrado!");
+
+            //IDENTIFICAR O USUÁRIO CONECTADO
+            var email = context.User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value
+                ?? throw new InvalidOperationException("Usuário não conectado!");
+
+            var pessoa = dalPessoa
+                .RecuperarPor(p => p.Email.Equals(email))
+                ?? throw new InvalidOperationException("Usuário não conectado!");
+
+            //IDENTIFICAR A AVALIACAO (CASO EXISTA)
+            var avaliacao = artista.Avaliacoes
+                .FirstOrDefault(av => av.ArtistaId == artista.Id
+                                    && av.PessoaId == pessoa.Id);
+
+            //EXIBIR
+            if (avaliacao is null)
+            {
+                //SE NÃO EXISTIR NENHUMA AVALIAÇÃO DESSA PESSOA PARA ESTE ARTISTA
+                //RETORNO QUE A NOTA É ZERO
+                return Results.Ok(new AvaliacaoArtistaResponse(artista.Id,
+                                                               artista.Nome,
+                                                               0));
+                //return Results.NotFound("Não existe avaliação para este artista!");
+            }
+            else//CASO JÁ EXISTA ESSA AVALIAÇÃO
+                //RETORNO EM FORMATO DE AvaliacaoArtistaResponse
+            {
+                return Results.Ok(new AvaliacaoArtistaResponse(
+                                            avaliacao.ArtistaId, 
+                                            artista.Nome,
+                                            avaliacao.Nota));
+            }
+
+        });
+
+        
         //ENDPOINT PARA INSERÇÃO/ATUALIZAÇÃO DE UMA AVALIAÇÃO
         groupBuilder.MapPost("avaliacao", (
             HttpContext context,
