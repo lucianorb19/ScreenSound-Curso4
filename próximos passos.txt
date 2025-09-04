@@ -1,0 +1,10 @@
+APLICAÇÕES WEB COM C# E .NET
+
+TESTES AUTOMATIZADOS
+DevOps - Build no github action ou azure dev ops
+Contêiners
+Segurança (Autenticação e autorização e muito mais)
+
+Microsserviços
+gRPC (usar no lugar de API Rest, com melhor desempenho)
+graphQL
